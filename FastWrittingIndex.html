@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Бързопис</title>
+    <meta charset="UTF-8">
+    <script>
+        function reloadPages() {
+            location.reload(true);
+        }
+    </script>
+    <style>
+        body{
+            background-color: skyblue;
+            font-size: 20px;
+        }
+        #main-content{
+            display: flex;
+            justify-content: space-between;
+        }
+        #warning-div{
+            width: 30%;
+            display: inline-block;
+            vertical-align: top;
+            color: #ff8b44;
+        }
+        h2{
+            float: right;
+            margin: -13px 10% 0px 0px;
+        }
+    </style>
+    <meta   name="author" content="Kiril Yankov"/>
+</head>
+<body>
+<div>
+    <label for="time">Enter minutes for writing</label>
+    <input type="text" id="time" name="time"/>
+    <button onclick="start()">Start</button>
+    <button onclick="reloadPages()">Clear</button>
+    <h2>Example</h2>
+</div>
+<div id="main-content">
+    <div id="bodyInputText" style="display:inline-block" >
+        <textarea id="text" cols="40" rows="30"></textarea>
+    </div>
+    <div id="warning-div">
+        <h1>
+            Warning: Please do not add new word or remove word from text example. If you do that the application will work not correctly
+        </h1>
+    </div>
+    <div style="float:right">
+        <textarea id="example" cols="40" rows="30" style="float: right;">Приоритет е от 100 до 119 - за инциденти, при които времето за реакция на ССР е от първостепенно важно значение за запазване на човешкият живот или имущество. Обслужването на тези сигнали се извършва в най- кратък срок, като след приемането операторът определя типа на инцидента с ключова дума от класификатора, вписва число (например: 111) в поле "приоритет", структорира адреса на инцидента, вписва най-важната информация за случая и го предава към координатор с бутон "предаване". В случай, че приеме цялата информация оформи картона за кратко време, операторът вписва приоритет и предава електронния картон към координатор с бутон "инцидент". Ако операторът предаде информацията с бутон "предаване", при координатора тя се получава с червен цвят на светлочервен фон, а ако е предадена с бутон "инцидент" е с черен цвят на червен фон. Координаторът с едно кликване с ляв бутон на мишката отваря електронният картон, проверява информацията и незабавно изпраща електронни картони към компетентните да реагират ССР с двойно кликване на левият бутон на мишката върху съответните мерки от филтъра "мерки към акция"(например: "3.Полиция").</textarea>
+    </div>
+</div>
+<footer>
+    <div id="foot">K&J Software Solutions</div>
+    <div>Version : 1.03</div>
+</footer>
+<script>
+
+    var error = 0;
+    var _foot = document.getElementById("foot");
+    _foot.style.textAlign = "center";
+    _foot.style.marginTop = "30px";
+
+    function start() {
+
+        var time = (function () {
+            var _time = document.getElementById("time").value;
+            _time *= 60;
+            return _time;
+        })();
+
+        var countPerMinuteSymbols = time;
+        var example = document.getElementById("example").value;
+        var _text = document.getElementById("text");
+
+        _text.focus();
+
+        var myTimer = setInterval(
+                function timeClick() {
+
+                    var count = 1;
+                    if (time == 0) {
+                        stop();
+
+                        var text = document.getElementById("text");
+                        var textContent = text.value;
+                        text.value = null;
+
+                        var _bodyInputText = document.getElementById("bodyInputText");
+                        _bodyInputText.style.height = "456px";
+                        _bodyInputText.style.overflow = "auto";
+                        _bodyInputText.removeChild(text);
+
+                        var enterText = document.createElement("div");
+                        enterText.style.width = "400px";
+
+                        comparison(textContent, example, enterText);
+
+                        _bodyInputText.appendChild(enterText);
+                        count = textContent.length;
+
+                        var _count = document.createElement("div");
+                        _count.textContent = count.toString();
+
+                        createAndAppendElement(_bodyInputText, "span", "Брой на записани символи: ");
+                        _bodyInputText.appendChild(_count);
+
+                        createAndAppendElement(_bodyInputText,"span", "Брой на записани символи за една минута: " );
+
+                        createAndAppendElement(_bodyInputText,"div", count / (countPerMinuteSymbols / 60 ));
+
+                        createAndAppendElement(_bodyInputText,"span", "Процент направени грешки от въведените символи: " );
+
+                        createAndAppendElement(_bodyInputText, "div", parseFloat(error / (count / 100)).toFixed(2) + "%" );
+                    }
+                    else {
+                        time -= count;
+                    }
+                }, 1000
+        )
+
+        function stop() {
+            clearInterval(myTimer);
+        }
+
+        function comparison(enterText, example, youDiv) {
+
+            var _youDivs = youDiv;
+            enterText = ''+enterText.replace(/ +(?= )/g,'');
+            example = ''+example.replace(/ +(?= )/g,'');
+            var _enterText = enterText.split(" ");
+            var _example = example.split(" ");
+
+            for (var i = 0, length = _enterText.length; i < length; i++) {
+
+                var currentWord = _enterText[i];
+                var currentWordFromExample = _example[i];
+
+                if (currentWord.length === currentWordFromExample.length) {
+                    for (var characterIndex = 0; characterIndex < currentWordFromExample.length; characterIndex++) {
+                        if (currentWord[characterIndex] === currentWordFromExample[characterIndex]) {
+                            createCorrectSpan(_youDivs, currentWord[characterIndex]);
+                        }
+                        else {
+                            error = createErrorSpan(_youDivs, currentWord[characterIndex], error);
+                        }
+                    }
+
+                    var s = document.createElement("span");
+                    s.style.marginLeft = "5px";
+                    _youDivs.appendChild(s);
+                }
+                else if (currentWord.length < currentWordFromExample.length) {
+                    for (var characterIndex = 0; characterIndex < currentWordFromExample.length; characterIndex++) {
+                        if (currentWord[characterIndex] === currentWordFromExample[characterIndex]) {
+                            createCorrectSpan(_youDivs, currentWord[characterIndex]);
+                        }
+                        else {
+
+                            error = createErrorSpan(_youDivs, currentWordFromExample[characterIndex], error);
+
+                            var enteredTextTempCh = currentWord.toUpperCase()[characterIndex];
+                            var _exampleTempCh = currentWordFromExample.toUpperCase()[characterIndex];
+
+                            if (enteredTextTempCh !== _exampleTempCh) {
+                                currentWord = " " + currentWord;
+                            }
+                        }
+                    }
+
+                    var s = document.createElement("span");
+                    s.style.marginLeft = "5px";
+                    _youDivs.appendChild(s);
+                }
+                else if (currentWord.length > currentWordFromExample.length) {
+                    for (var characterIndex = 0; characterIndex < currentWordFromExample.length; characterIndex++) {
+                        if (currentWord[characterIndex] === currentWordFromExample[characterIndex]) {
+                            createCorrectSpan(_youDivs, currentWord[characterIndex]);
+                        }
+                        else {
+
+                            error = createErrorSpan(_youDivs, currentWordFromExample[characterIndex], error);
+
+                            var enteredTextTempCh = currentWord.toUpperCase()[characterIndex];
+                            var _exampleTempCh = currentWordFromExample.toUpperCase()[characterIndex];
+
+                            if (enteredTextTempCh !== _exampleTempCh) {
+
+                                var index = 0;
+                                var _enterTextTempWhenLengthIsBigger = " ";
+
+                                while (index < currentWord.length) {
+                                    if (index !== characterIndex) {
+                                        _enterTextTempWhenLengthIsBigger += currentWord[index];
+                                    }
+                                    index++;
+                                }
+
+                                currentWord = _enterTextTempWhenLengthIsBigger;
+                                currentWord = currentWord.trim();
+                            }
+                        }
+                    }
+
+                    var s = document.createElement("span");
+                    s.style.marginLeft = "5px";
+                    _youDivs.appendChild(s);
+                }
+            }
+        }
+
+        function createCorrectSpan(div, character) {
+            var s = document.createElement("span");
+            s.style.display = "inline-block";
+            s.textContent = character;
+            div.appendChild(s);
+        }
+
+        function createErrorSpan(div, character, _error) {
+            var s = document.createElement("span");
+            s.textContent = character;
+            s.style.display = "inline-block";
+            s.style.color = "red";
+            div.appendChild(s);
+            return _error += 1;
+        }
+
+        function createAndAppendElement(parentElement,elementType, textContent ){
+            var element = document.createElement(elementType);
+            element.textContent = textContent;
+            parentElement.appendChild(element);
+        }
+    }
+</script>
+</body>
+</html>

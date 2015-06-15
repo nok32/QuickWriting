@@ -1,0 +1,1 @@
+This project is written on JavaScript in 2014. It is a program for check how fast man write. The program find wrong characters from input text, count them and paint them in red.
